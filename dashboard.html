@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standup Dashboard — {{ selected_date }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f4f5f7;
+            color: #1a1a2e;
+            padding: 2rem;
+        }
+        h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+        .subtitle { color: #666; margin-bottom: 1.5rem; }
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .nav a {
+            text-decoration: none;
+            color: #4a56e2;
+            font-weight: 500;
+        }
+        .nav a:hover { text-decoration: underline; }
+        .nav .date-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .username {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #4a56e2;
+        }
+        .timestamp { color: #999; font-size: 0.85rem; }
+        .field-label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #888;
+            margin-top: 0.6rem;
+        }
+        .field-value {
+            margin-top: 0.15rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .blocker { color: #e24a4a; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Standup Dashboard</h1>
+    <p class="subtitle">Review daily standup responses from the team.</p>
+
+    <div class="nav">
+        <a href="/dashboard?date={{ prev_date.isoformat() }}">← {{ prev_date.strftime('%b %d') }}</a>
+        <span class="date-label">{{ selected_date.strftime('%A, %B %d, %Y') }}</span>
+        {% if next_date <= today %}
+        <a href="/dashboard?date={{ next_date.isoformat() }}">{{ next_date.strftime('%b %d') }} →</a>
+        {% endif %}
+        {% if selected_date != today %}
+        <a href="/dashboard">Today</a>
+        {% endif %}
+    </div>
+
+    {% if responses %}
+        {% for r in responses %}
+        <div class="card">
+            <div class="card-header">
+                <span class="username">@{{ r.user.slack_username }}</span>
+                <span class="timestamp">{{ r.submitted_at.strftime('%I:%M %p UTC') }}</span>
+            </div>
+            <div class="field-label">Yesterday</div>
+            <div class="field-value">{{ r.yesterday }}</div>
+            <div class="field-label">Today</div>
+            <div class="field-value">{{ r.today }}</div>
+            <div class="field-label">Blockers</div>
+            <div class="field-value {% if r.blockers != 'None' %}blocker{% endif %}">
+                {{ r.blockers }}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No standup responses for this date yet.</p>
+        </div>
+    {% endif %}
+</body>
+</html>
